@@ -15,7 +15,7 @@ const Index = () => {
       <Container fluid>
         <Row style={{ backgroundColor: "#f7f7f7"}}>
             <Col xs={12} lg={6} md={6}>
-              <h1>for content</h1>
+              <h1>for more content</h1>
             </Col>
             <Col xs={12} lg={6} md={6}>
                 <Form/>
