@@ -60,7 +60,6 @@ const Index = () => {
     }, [router]);
 
     const onChangeImage = (imageList, addUpdateIndex) => {
-        console.log(imageList, addUpdateIndex);
         setImages(imageList);
     };
     const setValue = (e, type) => {
@@ -136,6 +135,11 @@ const Index = () => {
                                             <Card.Title>{data.name}</Card.Title>
                                             <Card.Text>
                                                 {data.description.slice(0,100)}
+                                                {data.tags.map((data_tag, x) => {
+                                                    return (
+                                                        <a href="#" key={x}> {data_tag.tag} </a>
+                                                    )
+                                                })}
                                             </Card.Text>
                                         </Card.Body>
                                     </Card>
