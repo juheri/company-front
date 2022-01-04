@@ -9,8 +9,7 @@ import {
     Form,
     Image,
     Carousel,
-    Alert,
-    Badge
+    Alert
 } from "react-bootstrap";
 import { FaPlus, FaEdit, FaTrashAlt } from "react-icons/fa";
 import Navbar from "../../../layout/header";
