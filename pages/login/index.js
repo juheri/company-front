@@ -11,7 +11,7 @@ const Index = () => {
         <React.Fragment>
             <Meta/>
             <Navbar />
-            <Container fluid>
+            <Container>
                 <FormLogin/>
             </Container>
         </React.Fragment>

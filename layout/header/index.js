@@ -6,28 +6,28 @@ import {
 } from "react-bootstrap";
 import { Decrypt } from "../../endpoint/login/index"
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/router";
-
 
 const Index = () => {
     const [login, setLogin] = useState(false);
-
-    useEffect(async () => {
-        const session = localStorage.getItem("_session")
-        if(!session){ setLogin(false) }
-        try {
-            await Decrypt()
-            setLogin(true)
-        } catch (err){
-            setLogin(false)
+    useEffect(() => {
+        const session = localStorage.getItem("_session");
+        !session && setLogin(false);
+        const fetchData = async () => {
+            try {
+                await Decrypt();
+                setLogin(true)
+            } catch (err){
+                setLogin(false)
+            }
         }
+        fetchData();
     }, []);
 
     return (
         <React.Fragment>
             <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
-                <Container>
-                    <Navbar.Brand href="/">Company Project</Navbar.Brand>
+                <Container fluid>
+                    <Navbar.Brand href="/">Company</Navbar.Brand>
                     <Navbar.Toggle aria-controls="responsive-navbar-nav" />
                     <Navbar.Collapse id="responsive-navbar-nav">
                     <Nav className="me-auto"></Nav>
@@ -45,10 +45,9 @@ const Index = () => {
 };
 
 const MenuLogin = () => {
-    const router = useRouter()
     const logout = () => {
-        localStorage.removeItem("_session")
-        router.push("/");
+        localStorage.removeItem("_session");
+        window.location.href = "/";
     }
     return (
         <React.Fragment>
