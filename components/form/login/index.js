@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { Form, Col, Row, InputGroup, Button, Alert, Spinner } from "react-bootstrap";
+import { Form, Col, Row, InputGroup, Button, Alert } from "react-bootstrap";
 import { Login } from "../../../endpoint/login"
+import { useRouter } from "next/router";
 
 const Index = () => {
+    const router = useRouter();
     const [key, setKey] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState(false);
@@ -17,17 +19,17 @@ const Index = () => {
             setError(true)
             setMessage("data harus diisi semua")
         } else {
-            setLoading(true)
+            setLoading(true);
             try {
                 const data = { key, password }
                 const result = await Login(data)
                 localStorage.setItem('_session', result.data.data)
-                window.location.href="/dashboard"
+                router.push("/dashboard");
                 setLoading(false)
             } catch (err) {
                 setMessage(err.response.data.message);
                 setError(true);
-                setLoading(false)
+                setLoading(false);
             }
         }
     }
@@ -35,39 +37,41 @@ const Index = () => {
         <React.Fragment>
         <Form>
             <Row className="mb-3">
-            <Form.Group as={Col} md="12" controlId="validationCustomUsername">
+            <Form.Group as={Col} md="12">
                 {error ? <Alert variant="danger">{message}</Alert> : null}
                 <Form.Label>Email / No Telepon</Form.Label>
                 <InputGroup hasValidation>
-                <Form.Control
-                    type="text"
-                    placeholder="Email / No Telepon"
-                    aria-describedby="inputGroupPrepend"
-                    required
-                    onChange={(e) => setKey(e.target.value)}
-                    value={key}
-                />
+                    <Form.Control
+                        type="text"
+                        placeholder="Email / No Telepon"
+                        aria-describedby="inputGroupPrepend"
+                        required
+                        onChange={(e) => setKey(e.target.value)}
+                        value={key}
+                    />
                 </InputGroup>
             </Form.Group>
-            <Form.Group as={Col} md="12" controlId="validationCustomUsername">
+            <Form.Group as={Col} md="12">
                 <Form.Label>Password</Form.Label>
                 <InputGroup hasValidation>
-                <Form.Control
-                    type="Password"
-                    placeholder="Password"
-                    aria-describedby="inputGroupPrepend"
-                    required
-                    onChange={(e) => setPassword(e.target.value)}
-                    value={password}
-                />
+                    <Form.Control
+                        type="Password"
+                        placeholder="Password"
+                        aria-describedby="inputGroupPrepend"
+                        required
+                        onChange={(e) => setPassword(e.target.value)}
+                        value={password}
+                    />
                 </InputGroup>
             </Form.Group>
             </Row>
-            {loading ? 
-                <Button><Spinner variant="spinner" size="sm"/> Loading</Button> :
-                <Button onClick={handleSubmit}>Login</Button>
-            }
-            
+            <Button
+                variant="primary"
+                disabled={loading}
+                onClick={handleSubmit}
+            >
+                {loading ? 'Loading…' : 'Login'}
+            </Button>
         </Form>
         </React.Fragment>
     );

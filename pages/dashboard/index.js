@@ -10,19 +10,20 @@ const Index = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
 
-  useEffect(async () => {
+  useEffect(() => {
     const session = localStorage.getItem("_session");
-    if(!session){
-      router.push("/");
+    !session && router.push("/");
+    const fetchData = async () => {
+      try {
+        await Decrypt();
+        setLoading(false);
+      } catch (err){
+        setLoading(true);
+        router.push("/");
+      }
     }
-    try {
-      await Decrypt()
-      setLoading(false)
-    } catch (err){
-      setLoading(true)
-      router.push("/");
-    }
-  }, []);
+    fetchData();
+  }, [router]);
 
   return (
     <React.Fragment>
