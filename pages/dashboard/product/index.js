@@ -9,7 +9,8 @@ import {
     Form,
     Image,
     Carousel,
-    Alert
+    Alert,
+    Spinner
 } from "react-bootstrap";
 import { FaPlus, FaEdit, FaTrashAlt } from "react-icons/fa";
 import Navbar from "../../../layout/header";
@@ -23,7 +24,7 @@ import { createProductApi, getProduct } from "../../../endpoint/products";
 
 const Index = () => {
     const router = useRouter();
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [modalShow, setModalShow] = useState(false);
     const [data, setData] = useState(null);
     const [tags, setTags] = useState([]);
@@ -39,20 +40,19 @@ const Index = () => {
     useEffect(() => {
         const session = localStorage.getItem("_session");
         !session && router.push("/");
-        setLoading(false);
         const fetchData = async () => {
             try {
                 const result = await Decrypt();
-                const products = await getProduct(result.token, 1);
+                await getProduct(result.token, 1).then( products => {
+                    setLoading(false);
+                    setProduct(products.data.data.rows);
+                });
                 setData(result);
-                setLoading(false);
-                setProduct(products.data.data.rows);
             } catch (err){
                 if (err.response.data.message && err.response.data.message.includes("session")) {
                     localStorage.removeItem("_session");
                     router.push("/");
                 }
-                setLoading(true);
                 router.push("/");
             }
         }
@@ -86,18 +86,18 @@ const Index = () => {
         });
 
         try {
-            await createProductApi(formData, data.token);
-            setLoadingCreate(false);
-            setError(false);
-            setModalShow(false);
-            location.reload();
+            await createProductApi(formData, data.token).then(() => {
+                setLoadingCreate(false);
+                setError(false);
+                setModalShow(false);
+                location.reload();
+            });
         } catch (err) {
             setLoadingCreate(false);
             setError(true);
             setMessage(err.response.data.message);
         }
     }
-
     return (
         <React.Fragment>
             {loading ? <Loading/> : 
@@ -264,7 +264,16 @@ const Index = () => {
                                     disabled={loadingCreate}
                                     onClick={createProduct}
                                 >
-                                    {loading ? 'Loading…' : 'Simpan'}
+                                    {loadingCreate ? 
+                                        <Spinner
+                                            as="span"
+                                            animation="border"
+                                            size="sm"
+                                            role="status"
+                                            aria-hidden="true"
+                                        />
+                                        : 'Simpan'
+                                    }
                                 </Button>
                             </Modal.Footer>
                         </Modal>
