@@ -65,6 +65,7 @@ const Index = (props) => {
             setMessage(err.response.data.message);
         }
     };
+
     return (
         <React.Fragment>
             <Modal.Header closeButton>
