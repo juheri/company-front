@@ -18,6 +18,7 @@ import { Decrypt } from "../../../endpoint/login/index";
 import Meta from "../../../components/Meta";
 import { getProduct, deleteProduct } from "../../../endpoint/products";
 import CreateProductForm from "../../../components/form/products/CreateProduct";
+import { FaArrowLeft } from "react-icons/fa";
 
 const Index = () => {
     const router = useRouter();
@@ -30,27 +31,34 @@ const Index = () => {
     const [error, setError] = useState(false);
     const [message, setMessage] = useState("");
     const [loadingDelete, setLoadingDelete] = useState(false);
-
+    const [type, setType] = useState("detail");
+    const [errorLoad, setErrorLoad] = useState(false);
+    
     useEffect(() => {
         const session = localStorage.getItem("_session");
         !session && router.push("/");
         const fetchData = async () => {
             try {
-                const result = await Decrypt();
-                await getProduct(result.token, 1).then((products) => {
-                    setLoading(false);
-                    setProduct(products.data.data.rows);
+                await Decrypt().then(async(result) => {
+                    await getProduct(result.token, 1).then((products) => {
+                        setLoading(false);
+                        setProduct(products.data.data.rows);
+                    });
+                    setData(result);
                 });
-                setData(result);
             } catch (err) {
-                if (
+                setLoading(false);
+                if (err.response == undefined) {
+                    setErrorLoad(true);
+                } else if (
                     err.response.data.message &&
                     err.response.data.message.includes("session")
                 ) {
                     localStorage.removeItem("_session");
                     router.push("/");
+                } else {
+                    router.push("/");
                 }
-                router.push("/");
             }
         };
         fetchData();
@@ -75,6 +83,12 @@ const Index = () => {
         setModalDetail(true) 
         setProductDetail(data)
     }
+
+    const edit = () => {
+        setType("edit");
+        
+    }
+
     return (
         <React.Fragment>
             {loading ? (
@@ -84,6 +98,7 @@ const Index = () => {
                 <Meta />
                 <Navbar />
                 <Container className="bg-light">
+                    {errorLoad && <Alert variant="danger">Gagal memuat Data, silakan refresh kembali</Alert>}
                     <Row className="sticky-top bg-light">
                     <Col>
                         <h1>Produk</h1>
@@ -145,57 +160,77 @@ const Index = () => {
                         centered
                         animation={true}
                     >
-                        <Modal.Header closeButton>
-                            {error && <Alert variant="danger">{message}</Alert>}
-                            <Modal.Title id="contained-modal-title-vcenter">
-                                Produk Detail
-                            </Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>
-                            <Carousel>
-                                {productDetail && productDetail.product_images.map((image, index) => {
-                                    return (
-                                    <Carousel.Item key={index}>
-                                        <Image
-                                        className="d-block w-100"
-                                        src={`${process.env.base_url}/images/${image.filename}`}
-                                        alt="First slide"
-                                        />
-                                    </Carousel.Item>
-                                    );
-                                })}
-                            </Carousel>
-                            <p>Kode Produk:</p>
-                            <p>{productDetail && productDetail.code}</p>
-                            <p>Nama Produk:</p>
-                            <p>{productDetail && productDetail.name}</p>
-                            <p>Deskripsi: </p>
-                            <p>{productDetail && productDetail.description}</p>
-                            <p>Tag: </p>
-                            {productDetail && productDetail.tags.map((data_tag, x) => {
-                                return (
-                                    <a href="#" key={x}>
-                                        {" "}
-                                        {data_tag.tag}{" "}
-                                    </a>
-                                );
-                            })}
-                        </Modal.Body>
-                        <Modal.Footer>
-                            <Button variant="danger" onClick={() => onDelete(productDetail.id)}>
-                                {loadingDelete ? (
-                                    <Spinner
-                                        as="span"
-                                        animation="border"
-                                        size="sm"
-                                        role="status"
-                                        aria-hidden="true"
-                                    />
-                                ) : (
-                                    "Hapus Produk"
-                                )}
-                            </Button>
-                        </Modal.Footer>
+                        {type == "detail" ? 
+                            <><Modal.Header closeButton>
+                                        {error && <Alert variant="danger">{message}</Alert>}
+                                        <Modal.Title id="contained-modal-title-vcenter">
+                                            Produk Detail
+                                        </Modal.Title>
+                                    </Modal.Header>
+                                        <Modal.Body>
+                                            <Carousel>
+                                                {productDetail && productDetail.product_images.map((image, index) => {
+                                                    return (
+                                                        <Carousel.Item key={index}>
+                                                            <Image
+                                                                className="d-block w-100"
+                                                                src={`${process.env.base_url}/images/${image.filename}`}
+                                                                alt="First slide" />
+                                                        </Carousel.Item>
+                                                    );
+                                                })}
+                                            </Carousel>
+                                            <p>Kode Produk:</p>
+                                            <p>{productDetail && productDetail.code}</p>
+                                            <p>Nama Produk:</p>
+                                            <p>{productDetail && productDetail.name}</p>
+                                            <p>Deskripsi: </p>
+                                            <p>{productDetail && productDetail.description}</p>
+                                            <p>Tag: </p>
+                                            {productDetail && productDetail.tags.map((data_tag, x) => {
+                                                return (
+                                                    <a href="#" key={x}>
+                                                        {" "}
+                                                        {data_tag.tag}{" "}
+                                                    </a>
+                                                );
+                                            })}
+                                        </Modal.Body>
+                                        <Modal.Footer>
+                                            <Button variant="danger" onClick={() => onDelete(productDetail.id)}>
+                                                {loadingDelete ? (
+                                                    <Spinner
+                                                        as="span"
+                                                        animation="border"
+                                                        size="sm"
+                                                        role="status"
+                                                        aria-hidden="true" />
+                                                ) : (
+                                                    "Hapus Produk"
+                                                )}
+                                            </Button>
+                                            <Button variant="success" onClick={() => edit()}>
+                                                Edit Produk
+                                            </Button>
+                                        </Modal.Footer>
+                                </>
+                        : 
+                        <>
+                            <Modal.Header closeButton>
+                                <Modal.Title id="contained-modal-title-vcenter">
+                                    <FaArrowLeft onClick={() => setType("detail")}/> Edit Produk
+                                </Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body>
+                                modal body
+                            </Modal.Body>
+                            <Modal.Footer>
+                                <Button variant="primary">
+                                    Simpan
+                                </Button>
+                            </Modal.Footer>
+                        </> }
+                        
                     </Modal>
                 </Container>
             </React.Fragment>
