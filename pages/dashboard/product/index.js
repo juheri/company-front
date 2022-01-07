@@ -1,41 +1,35 @@
 import React, { useEffect, useState } from "react";
-import { 
+import {
     Container,
     Row,
     Col,
     Card,
     Button,
     Modal,
-    Form,
     Image,
     Carousel,
     Alert,
     Spinner
 } from "react-bootstrap";
-import { FaPlus, FaEdit, FaTrashAlt } from "react-icons/fa";
 import Navbar from "../../../layout/header";
 import { useRouter } from "next/router";
 import Loading from "../../../components/loading";
 import { Decrypt } from "../../../endpoint/login/index";
 import Meta from "../../../components/Meta";
-import { InputTags } from 'react-bootstrap-tagsinput';
-import ImageUploading from "react-images-uploading";
-import { createProductApi, getProduct } from "../../../endpoint/products";
+import { getProduct, deleteProduct } from "../../../endpoint/products";
+import CreateProductForm from "../../../components/form/products/CreateProduct";
 
 const Index = () => {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [modalShow, setModalShow] = useState(false);
-    const [data, setData] = useState(null);
-    const [tags, setTags] = useState([]);
-    const [images, setImages] = useState([]);
-    const [productName, setProductName] = useState("");
-    const [productCode, setProductCode] = useState("");
-    const [description, setDescription] = useState("");
     const [product, setProduct] = useState([]);
-    const [loadingCreate, setLoadingCreate] = useState(false);
+    const [data, setData] = useState(null);
+    const [modalDetail, setModalDetail] = useState(false);
+    const [productDetail, setProductDetail] = useState(null);
     const [error, setError] = useState(false);
     const [message, setMessage] = useState("");
+    const [loadingDelete, setLoadingDelete] = useState(false);
 
     useEffect(() => {
         const session = localStorage.getItem("_session");
@@ -43,245 +37,171 @@ const Index = () => {
         const fetchData = async () => {
             try {
                 const result = await Decrypt();
-                await getProduct(result.token, 1).then( products => {
+                await getProduct(result.token, 1).then((products) => {
                     setLoading(false);
                     setProduct(products.data.data.rows);
                 });
                 setData(result);
-            } catch (err){
-                if (err.response.data.message && err.response.data.message.includes("session")) {
+            } catch (err) {
+                if (
+                    err.response.data.message &&
+                    err.response.data.message.includes("session")
+                ) {
                     localStorage.removeItem("_session");
                     router.push("/");
                 }
                 router.push("/");
             }
-        }
+        };
         fetchData();
     }, [router]);
 
-    const onChangeImage = (imageList, addUpdateIndex) => {
-        setImages(imageList);
-    };
-    const setValue = (e, type) => {
-        if (type == "description") {
-            setDescription(e.target.value);
-        } else if(type == "productName") {
-            setProductName(e.target.value);
-        } else {
-            setProductCode(e.target.value);
-        }
-    }
-
-    const createProduct = async () => {
-        setLoadingCreate(true);
-        const formData = new FormData();
-        formData.append("name", productName);
-        formData.append("code", productCode);
-        formData.append("description", description);
-        tags.map((data) => {
-            formData.append("tags", data);
-        })
-        images.map((data) => {
-            formData.append("image", data.file);
-        });
-
+    const onDelete = async (product_id) => {
+        setLoadingDelete(true);
         try {
-            await createProductApi(formData, data.token).then(() => {
-                setLoadingCreate(false);
-                setError(false);
-                setModalShow(false);
+            await deleteProduct(product_id, data.token)
+            .then(() => {
+                setLoadingDelete(false);
                 location.reload();
             });
         } catch (err) {
-            setLoadingCreate(false);
+            setLoadingDelete(false);
             setError(true);
             setMessage(err.response.data.message);
         }
     }
+
+    const detail = (data) => {
+        setModalDetail(true) 
+        setProductDetail(data)
+    }
     return (
         <React.Fragment>
-            {loading ? <Loading/> : 
-                <React.Fragment>
-                    <Meta/>
-                    <Navbar/>
-                    <Container className="bg-light">
-                        <Row className="sticky-top bg-light">
-                            <Col>
-                                <h1>Produk</h1>
-                            </Col>
-                            <Col className="align-items-end">
-                                <Button onClick={() => setModalShow(true)}>Buat Produk</Button>
-                            </Col>
-                        </Row>
-                        <Row>
-                            { product.map((data, i) => 
-                                <Col sm={4} lg={4} md={4} xl={4} className="mb-5" key={i}>
-                                    <Card>
-                                        <Carousel>
-                                            {data.product_images.map((image, index) => {
+            {loading ? (
+                <Loading />
+            ) : (
+            <React.Fragment>
+                <Meta />
+                <Navbar />
+                <Container className="bg-light">
+                    <Row className="sticky-top bg-light">
+                    <Col>
+                        <h1>Produk</h1>
+                    </Col>
+                    <Col className="align-items-end">
+                        <Button onClick={() => setModalShow(true)}>Buat Produk</Button>
+                    </Col>
+                    </Row>
+                    <Row>
+                        {product.map((data, i) => (
+                            <Col sm={4} lg={4} md={4} xl={4} className="mb-5" key={i}>
+                                <Card onClick={() => detail(data)}>
+                                    <Carousel>
+                                        {data.product_images.map((image, index) => {
+                                            return (
+                                            <Carousel.Item key={index}>
+                                                <Image
+                                                className="d-block w-100"
+                                                src={`${process.env.base_url}/images/${image.filename}`}
+                                                alt="First slide"
+                                                />
+                                            </Carousel.Item>
+                                            );
+                                        })}
+                                    </Carousel>
+                                    <Card.Body>
+                                        <Card.Title>{data.name}</Card.Title>
+                                        <Card.Text>
+                                            {data.description.slice(0, 100)}
+                                            {data.tags.map((data_tag, x) => {
                                                 return (
-                                                    <Carousel.Item key={index}>
-                                                    <Image
-                                                        className="d-block w-100"
-                                                        src={`${process.env.base_url}/images/${image.filename}`}
-                                                        alt="First slide"
-                                                    />
-                                                </Carousel.Item>
-                                                )
-                                
+                                                    <a href="#" key={x}>
+                                                        {" "}
+                                                        {data_tag.tag}{" "}
+                                                    </a>
+                                                );
                                             })}
-                                        </Carousel>
-                                        <Card.Body>
-                                            <Card.Title>{data.name}</Card.Title>
-                                            <Card.Text>
-                                                {data.description.slice(0,100)}
-                                                {data.tags.map((data_tag, x) => {
-                                                    return (
-                                                        <a href="#" key={x}> {data_tag.tag} </a>
-                                                    )
-                                                })}
-                                            </Card.Text>
-                                        </Card.Body>
-                                    </Card>
-                                </Col>
-                            )}
-                        </Row>
-
-                        <Modal
-                            show={modalShow}
-                            onHide={() => setModalShow(false)}
-                            size="lg"
-                            aria-labelledby="contained-modal-title-vcenter"
-                            centered
-                            animation={false}
-                        >
-                            <Modal.Header closeButton>
-                                <Modal.Title id="contained-modal-title-vcenter">
-                                    Buat Produk
-                                </Modal.Title>
-                            </Modal.Header>
-                            <Modal.Body>
-                                <Form.Group className="mb-3">
-                                    {error && <Alert variant="danger">{message}</Alert>}
-                                    <Form.Label>Nama Produk</Form.Label>
-                                    <Form.Control 
-                                        type="text" 
-                                        name="productName" 
-                                        placeholder="Nama Produk" 
-                                        onChange={(e) => setValue(e, "productName")}
-                                        value={productName}
-                                        autoFocus
-                                    />
-                                </Form.Group>
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Kode Produk</Form.Label>
-                                    <Form.Control 
-                                        type="text" 
-                                        name="productCode" 
-                                        placeholder="Kode Produk" 
-                                        onChange={(e) => setValue(e, "productCode")}
-                                    />
-                                </Form.Group>
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Deskripsi</Form.Label>
-                                    <Form.Control 
-                                        as="textarea" 
-                                        name="description" 
-                                        placeholder="Deskripsi" 
-                                        rows={3} 
-                                        onChange={(e) => setValue(e, "description")}
-                                    />
-                                </Form.Group>
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Gambar</Form.Label>
-                                    <ImageUploading
-                                        multiple
-                                        value={images}
-                                        onChange={onChangeImage}
-                                        maxNumber={5}
-                                        dataURLKey="data_url"
-                                    >
-                                        {({
-                                            imageList,
-                                            onImageUpload,
-                                            onImageRemoveAll,
-                                            onImageUpdate,
-                                            onImageRemove,
-                                            isDragging,
-                                            dragProps
-                                        }) => (
-                                            <React.Fragment>
-                                                <Row className="mb-3 text-center">
-                                                    <Col sm>
-                                                        <Button
-                                                            className="text-center"
-                                                            size="sm"
-                                                            variant="primary"
-                                                            style={isDragging ? { color: "red" } : null}
-                                                            onClick={onImageUpload}
-                                                            {...dragProps}
-                                                        >
-                                                            <FaPlus/> Tambah Gambar
-                                                        </Button>
-                                                    </Col>
-                                                    <Col sm>
-                                                        <Button 
-                                                            size="sm" 
-                                                            variant="danger" 
-                                                            onClick={onImageRemoveAll} 
-                                                            className="text-center"
-                                                        > 
-                                                            <FaTrashAlt/> Hapus semua gambar
-                                                        </Button>
-                                                    </Col>
-                                                </Row>
-                                                <Row>
-                                                    {imageList.map((image, index) => (
-                                                            <Col sm={3} key={index} className="text-center mb-3">
-                                                                <Image src={image.data_url} alt="image" width="80" height="80" className="mb-2"/>
-                                                                <Button size="sm" variant="success" onClick={() => onImageUpdate(index)} className="text-center">
-                                                                    <FaEdit/>
-                                                                </Button>
-                                                                <Button size="sm" variant="danger" onClick={() => onImageRemove(index)} className="text-center">
-                                                                    <FaTrashAlt/>
-                                                                </Button>
-                                                            </Col>
-                                                    ))}
-                                                </Row>
-                                            </React.Fragment>
-                                        )}
-                                    </ImageUploading>
-                                </Form.Group>
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Tag</Form.Label>
-                                    <InputTags values={tags} onTags={(value) => setTags(value.values)} id="tags"/>
-                                </Form.Group>
-                            </Modal.Body>
-                            <Modal.Footer>
-                                <Button variant="danger" onClick={()=> setModalShow(false)}>Close</Button>
-                                <Button
-                                    variant="primary"
-                                    disabled={loadingCreate}
-                                    onClick={createProduct}
-                                >
-                                    {loadingCreate ? 
-                                        <Spinner
-                                            as="span"
-                                            animation="border"
-                                            size="sm"
-                                            role="status"
-                                            aria-hidden="true"
+                                        </Card.Text>
+                                    </Card.Body>
+                                </Card>
+                            </Col>
+                        ))}
+                    </Row>
+                    <Modal
+                        show={modalShow}
+                        onHide={() => setModalShow(false)}
+                        size="lg"
+                        aria-labelledby="contained-modal-title-vcenter"
+                        centered
+                        animation={true}
+                    >
+                        <CreateProductForm data={data} setModalShow={setModalShow}/>
+                    </Modal>
+                    <Modal
+                        show={modalDetail}
+                        onHide={() => setModalDetail(false)}
+                        size="lg"
+                        aria-labelledby="contained-modal-title-vcenter"
+                        centered
+                        animation={true}
+                    >
+                        <Modal.Header closeButton>
+                            {error && <Alert variant="danger">{message}</Alert>}
+                            <Modal.Title id="contained-modal-title-vcenter">
+                                Produk Detail
+                            </Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <Carousel>
+                                {productDetail && productDetail.product_images.map((image, index) => {
+                                    return (
+                                    <Carousel.Item key={index}>
+                                        <Image
+                                        className="d-block w-100"
+                                        src={`${process.env.base_url}/images/${image.filename}`}
+                                        alt="First slide"
                                         />
-                                        : 'Simpan'
-                                    }
-                                </Button>
-                            </Modal.Footer>
-                        </Modal>
-                    </Container>
-                </React.Fragment>
-            }
+                                    </Carousel.Item>
+                                    );
+                                })}
+                            </Carousel>
+                            <p>Kode Produk:</p>
+                            <p>{productDetail && productDetail.code}</p>
+                            <p>Nama Produk:</p>
+                            <p>{productDetail && productDetail.name}</p>
+                            <p>Deskripsi: </p>
+                            <p>{productDetail && productDetail.description}</p>
+                            <p>Tag: </p>
+                            {productDetail && productDetail.tags.map((data_tag, x) => {
+                                return (
+                                    <a href="#" key={x}>
+                                        {" "}
+                                        {data_tag.tag}{" "}
+                                    </a>
+                                );
+                            })}
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button variant="danger" onClick={() => onDelete(productDetail.id)}>
+                                {loadingDelete ? (
+                                    <Spinner
+                                        as="span"
+                                        animation="border"
+                                        size="sm"
+                                        role="status"
+                                        aria-hidden="true"
+                                    />
+                                ) : (
+                                    "Hapus Produk"
+                                )}
+                            </Button>
+                        </Modal.Footer>
+                    </Modal>
+                </Container>
+            </React.Fragment>
+            )}
         </React.Fragment>
-    )
-}
+    );
+};
 
-export default Index
+export default Index;
