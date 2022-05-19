@@ -18,7 +18,7 @@ import { Decrypt } from "../../../endpoint/login/index";
 import Meta from "../../../components/Meta";
 import { getProduct, deleteProduct } from "../../../endpoint/products";
 import CreateProductForm from "../../../components/form/products/CreateProduct";
-import { FaArrowLeft } from "react-icons/fa";
+import EditProduct from "../../../components/form/products/EditProduct";
 
 const Index = () => {
     const router = useRouter();
@@ -84,11 +84,10 @@ const Index = () => {
         setProductDetail(data)
     }
 
-    const edit = () => {
-        setType("edit");
+    const typeModal = (param) => {
+        setType(param);
         
     }
-
     return (
         <React.Fragment>
             {loading ? (
@@ -209,26 +208,14 @@ const Index = () => {
                                                     "Hapus Produk"
                                                 )}
                                             </Button>
-                                            <Button variant="success" onClick={() => edit()}>
+                                            <Button variant="success" onClick={() => typeModal("edit")}>
                                                 Edit Produk
                                             </Button>
                                         </Modal.Footer>
                                 </>
                         : 
                         <>
-                            <Modal.Header closeButton>
-                                <Modal.Title id="contained-modal-title-vcenter">
-                                    <FaArrowLeft onClick={() => setType("detail")}/> Edit Produk
-                                </Modal.Title>
-                            </Modal.Header>
-                            <Modal.Body>
-                                modal body
-                            </Modal.Body>
-                            <Modal.Footer>
-                                <Button variant="primary">
-                                    Simpan
-                                </Button>
-                            </Modal.Footer>
+                            <EditProduct productDetail={productDetail} typeModal={typeModal}/>
                         </> }
                         
                     </Modal>
