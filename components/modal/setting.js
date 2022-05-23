@@ -1,10 +1,11 @@
 import { Modal, Button } from "react-bootstrap";
 import React from "react";
-import AddressForm from "./../form/setting/address";
-import CompanyForm from "./../form/setting/company";
+import AddressForm from "../form/setting/address";
+import CompanyForm from "../form/setting/company";
 import DescriptionForm from "../form/setting/description";
 import LogoForm from "../form/setting/logo";
 import UserForm from "../form/setting/user";
+import LinkForm from "../form/setting/link";
 
 const Index = (props) => {
   return (
@@ -30,7 +31,9 @@ const Index = (props) => {
             <UserForm />
           ) : props.menu === "Alamat" ? (
             <AddressForm />
-          ) : (
+          ) : props.menu === "Link" ? (
+            <LinkForm/>
+          ) :(
             <CompanyForm />
           )}
         </Modal.Body>

@@ -29,7 +29,7 @@ const Index = () => {
 
   const modalClose = () => {
     setModalShow(false);
-  }
+  };
   return (
     <React.Fragment>
       <Meta />
@@ -40,7 +40,7 @@ const Index = () => {
           <Navbar />
           <Container>
             <Tab.Container
-              id="list-group-tabs-example"
+              id="list-group-tabs"
               defaultActiveKey="#link1"
             >
               <Row style={{ marginTop: "20px" }}>
@@ -91,11 +91,24 @@ const Index = () => {
                     >
                       Nama Perusahaan
                     </ListGroup.Item>
+                    <ListGroup.Item
+                      action
+                      onClick={() => {
+                        setModalShow(true);
+                        setMenu("Link");
+                      }}
+                    >
+                      Link
+                    </ListGroup.Item>
                   </ListGroup>
                 </Col>
               </Row>
               {modalShow ? (
-                <ModalSetting menu={menu} modalShow={modalShow} close={modalClose}/>
+                <ModalSetting
+                  menu={menu}
+                  modalShow={modalShow}
+                  close={modalClose}
+                />
               ) : null}
             </Tab.Container>
           </Container>
