@@ -1,5 +1,5 @@
 const Company = () => {
-  return <>company setting page mantap</>;
+  return <>Company form</>;
 };
 
 export default Company;

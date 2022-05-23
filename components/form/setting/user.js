@@ -1,5 +1,5 @@
 const User = () => {
-  return <>user page mantap</>;
+  return <>user form</>;
 };
 
 export default User;

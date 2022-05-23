@@ -5,16 +5,17 @@ import { Container, Tab, Row, Col, ListGroup } from "react-bootstrap";
 import { Decrypt } from "../../../endpoint/login/index";
 import { useRouter } from "next/router";
 import Loading from "../../../components/loading";
+import ModalSetting from "./../../../components/modal/setting";
 
 const Index = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [modalShow, setModalShow] = useState(false);
+  const [menu, setMenu] = useState("");
 
   useEffect(() => {
     const session = localStorage.getItem("_session");
-    if (!session) {
-      router.push("/");
-    }
+    !session && router.push("/");
     const validate = async () => {
       try {
         const result = await Decrypt();
@@ -26,6 +27,9 @@ const Index = () => {
     validate();
   }, [router]);
 
+  const modalClose = () => {
+    setModalShow(false);
+  }
   return (
     <React.Fragment>
       <Meta />
@@ -42,27 +46,57 @@ const Index = () => {
               <Row style={{ marginTop: "20px" }}>
                 <Col sm={12}>
                   <ListGroup>
-                    <ListGroup.Item action href="/dashboard/setting/logo">
+                    <ListGroup.Item
+                      action
+                      onClick={() => {
+                        setModalShow(true);
+                        setMenu("Logo");
+                      }}
+                    >
                       Logo
                     </ListGroup.Item>
                     <ListGroup.Item
                       action
-                      href="/dashboard/setting/description"
+                      onClick={() => {
+                        setModalShow(true);
+                        setMenu("Deskripsi");
+                      }}
                     >
                       Deskripsi
                     </ListGroup.Item>
-                    <ListGroup.Item action href="/dashboard/setting/user">
+                    <ListGroup.Item
+                      action
+                      onClick={() => {
+                        setModalShow(true);
+                        setMenu("User");
+                      }}
+                    >
                       User
                     </ListGroup.Item>
-                    <ListGroup.Item action href="/dashboard/setting/address">
+                    <ListGroup.Item
+                      action
+                      onClick={() => {
+                        setModalShow(true);
+                        setMenu("Alamat");
+                      }}
+                    >
                       Alamat
                     </ListGroup.Item>
-                    <ListGroup.Item action href="/dashboard/setting/company">
+                    <ListGroup.Item
+                      action
+                      onClick={() => {
+                        setModalShow(true);
+                        setMenu("Nama Perusahaan");
+                      }}
+                    >
                       Nama Perusahaan
                     </ListGroup.Item>
                   </ListGroup>
                 </Col>
               </Row>
+              {modalShow ? (
+                <ModalSetting menu={menu} modalShow={modalShow} close={modalClose}/>
+              ) : null}
             </Tab.Container>
           </Container>
         </React.Fragment>
